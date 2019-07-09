@@ -7,6 +7,7 @@ import filter from 'lodash/filter';
 import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
 import isUndefined from 'lodash/isUndefined';
+import sortBy from 'lodash/sortBy';
 import uniqBy from 'lodash/uniqBy';
 import analyticsIcon from './images/analytics-icon.svg';
 import logo from './images/property-pulse-logo.svg';
@@ -72,12 +73,14 @@ class App extends Component {
       response => response.question
     );
 
-    this.setState({ responses: responses.data, questions });
+    this.setState({ responses: sortBy(responses.data, ['createdAt']), questions });
     this.setGraphDataForQuestion();
   }
 
-  handleQuestionChange = () => {
+  handleQuestionChange = e => {
     // Run filtering and set graph data based on new question
+    const activeQuestion = e.target.value;
+    this.setState({ activeQuestion }, () => this.setGraphDataForQuestion());
   };
 
   handleRangeChange = () => {
@@ -92,14 +95,16 @@ class App extends Component {
   };
 
   getDatasets = () => {
-    const activeQuestion = find(this.state.questions, { _id: this.state.activeQuestion });
-    const keyedResponses = groupBy(this.state.responses, response =>
+    const { activeQuestion, questions } = this.state;
+    const currentQuestion = questions.length ? find(questions, { _id: activeQuestion }) : {};
+    const responses = this.getResponsesForActiveQuestion();
+    const keyedResponses = groupBy(responses, response =>
       format(parse(response.createdAt), 'MMM DD')
     );
     let datasets = [];
     let data = {};
     Object.keys(keyedResponses).forEach(key => {
-      activeQuestion.responses.forEach(response => {
+      currentQuestion.responses.forEach(response => {
         if (isUndefined(data[response.text])) {
           data[response.text] = [];
         }
@@ -119,11 +124,15 @@ class App extends Component {
   };
 
   getLabels = () => {
-    const keyedResponses = groupBy(this.state.responses, response =>
+    const responses = this.getResponsesForActiveQuestion();
+    const keyedResponses = groupBy(responses, response =>
       format(parse(response.createdAt), 'MMM DD')
     );
     return Object.keys(keyedResponses);
   };
+
+  getResponsesForActiveQuestion = () =>
+    filter(this.state.responses, response => response.question._id === this.state.activeQuestion);
 
   getResponses = async () => {
     const responses = await axios.post(
@@ -140,6 +149,9 @@ class App extends Component {
   };
 
   render() {
+    const { activeQuestion, questions } = this.state;
+    const currentQuestion = questions.length ? find(questions, { _id: activeQuestion }) : {};
+
     return (
       <div className="app">
         <header className="header">
@@ -160,6 +172,12 @@ class App extends Component {
             </div>
           </div>
           <div className="content">
+            <h3>{currentQuestion.text}</h3>
+            <select onChange={e => this.handleQuestionChange(e)}>
+              {questions.map(question => (
+                <option value={question._id}>{question.text}</option>
+              ))}
+            </select>
             <Line data={this.state.data} />
           </div>
         </div>

@@ -66,3 +66,8 @@
   max-width: 24px;
   margin-right: 20px;
 }
+
+.content {
+  width: calc(80% - 275px);
+  padding: 20px;
+}
