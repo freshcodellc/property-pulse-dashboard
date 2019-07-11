@@ -1,5 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/auth';
+import logoGreen from '../images/property-pulse-logo-green.svg';
+import './Login.css';
 
 function Login() {
   const { login } = useAuth();
@@ -11,13 +13,18 @@ function Login() {
   };
 
   return (
-    <div className="app">
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="email" />
-        <input type="password" name="password" />
-        <button type="submit">Log In</button>
-      </form>
+    <div className="login">
+      <img src={logoGreen} alt="Property Pulse Logo" />
+      <h1 class="login-title">Log in to Property Pulse</h1>
+      <div className="login-form">
+        <form class="login-form__inner" onSubmit={handleSubmit}>
+          <input className="login-form__input" type="text" name="email" />
+          <input className="login-form__input" type="password" name="password" />
+          <button className="login-form__button" type="submit">
+            Log In
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

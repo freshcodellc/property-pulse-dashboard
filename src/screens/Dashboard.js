@@ -5,14 +5,12 @@ import parse from 'date-fns/parse';
 import filter from 'lodash/filter';
 import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
+import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import uniqBy from 'lodash/uniqBy';
-import { withAuth } from '../context/auth';
+import Layout from '../components/layout';
 import { getResponses } from '../utils/quiz-client';
-import analyticsIcon from '../images/analytics-icon.svg';
-import logo from '../images/property-pulse-logo.svg';
-import settingsIcon from '../images/settings-icon.svg';
 import './Dashboard.css';
 
 const DATASETS = {
@@ -63,12 +61,17 @@ const DATASETS = {
 class Dashboard extends Component {
   state = {
     data: {},
+    range: 30,
     responses: [],
     questions: [],
     activeQuestion: '5d0a5990163c280840f20eb8',
   };
 
   async componentDidMount() {
+    this.queryResponses();
+  }
+
+  queryResponses = async () => {
     const responses = await this.getResponses();
     const questions = uniqBy(responses, response => response.question._id).map(
       response => response.question
@@ -76,7 +79,7 @@ class Dashboard extends Component {
 
     this.setState({ responses: sortBy(responses, ['createdAt']), questions });
     this.setGraphDataForQuestion();
-  }
+  };
 
   handleQuestionChange = e => {
     // Run filtering and set graph data based on new question
@@ -84,8 +87,10 @@ class Dashboard extends Component {
     this.setState({ activeQuestion }, () => this.setGraphDataForQuestion());
   };
 
-  handleRangeChange = () => {
+  handleRangeChange = e => {
+    console.log('here');
     // Hit API to get new response data for a given range
+    this.setState({ range: e.target.value }, () => this.queryResponses());
   };
 
   setGraphDataForQuestion = () => {
@@ -136,7 +141,7 @@ class Dashboard extends Component {
     filter(this.state.responses, response => response.question._id === this.state.activeQuestion);
 
   getResponses = async () => {
-    const responses = await getResponses({ days: 20 });
+    const responses = await getResponses({ days: this.state.range });
 
     return responses;
   };
@@ -144,42 +149,35 @@ class Dashboard extends Component {
   render() {
     const { activeQuestion, questions } = this.state;
     const currentQuestion = questions.length ? find(questions, { _id: activeQuestion }) : {};
-    const { logout } = this.props.auth;
 
     return (
-      <div className="app">
-        <header className="header">
-          <div className="header__inner">
-            <img className="logo" src={logo} alt="Property Pulse" />
-            <button className="button button__hollow" onClick={logout}>
-              Sign out
-            </button>
-          </div>
-        </header>
-        <div className="main">
-          <div className="menu">
-            <div className="menu__item">
-              <img className="menu__item-icon" src={analyticsIcon} alt="Analytics Icon" />
-              Analytics
-            </div>
-            <div className="menu__item">
-              <img className="menu__item-icon" src={settingsIcon} alt="Settings Icon" />
-              Settings
-            </div>
-          </div>
-          <div className="content">
+      <Layout>
+        <select onChange={e => this.handleQuestionChange(e)}>
+          {questions.map(question => (
+            <option value={question._id} selected={question._id === activeQuestion}>
+              {question.text}
+            </option>
+          ))}
+        </select>
+        <select onChange={e => this.handleRangeChange(e)}>
+          <option name="last-week" value="7">
+            Last week
+          </option>
+          <option name="last-week" value="30" selected>
+            Last month
+          </option>
+        </select>
+        {!isEmpty(currentQuestion) ? (
+          <React.Fragment>
             <h3>{currentQuestion.text}</h3>
-            <select onChange={e => this.handleQuestionChange(e)}>
-              {questions.map(question => (
-                <option value={question._id}>{question.text}</option>
-              ))}
-            </select>
             <Line data={this.state.data} />
-          </div>
-        </div>
-      </div>
+          </React.Fragment>
+        ) : (
+          <h3>No data available for the current selection</h3>
+        )}
+      </Layout>
     );
   }
 }
 
-export default withAuth(Dashboard);
+export default Dashboard;
