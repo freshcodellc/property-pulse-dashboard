@@ -15,9 +15,9 @@ function Login() {
   return (
     <div className="login">
       <img src={logoGreen} alt="Property Pulse Logo" />
-      <h1 class="login-title">Log in to Property Pulse</h1>
+      <h1 className="login-title">Log in to Property Pulse</h1>
       <div className="login-form">
-        <form class="login-form__inner" onSubmit={handleSubmit}>
+        <form className="login-form__inner" onSubmit={handleSubmit}>
           <input className="login-form__input" type="text" name="email" />
           <input className="login-form__input" type="password" name="password" />
           <button className="login-form__button" type="submit">

@@ -1,61 +1,61 @@
-import React, { Component } from 'react';
-import { Line } from 'react-chartjs-2';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import filter from 'lodash/filter';
-import find from 'lodash/find';
-import groupBy from 'lodash/groupBy';
-import isEmpty from 'lodash/isEmpty';
-import isUndefined from 'lodash/isUndefined';
-import sortBy from 'lodash/sortBy';
-import uniqBy from 'lodash/uniqBy';
-import Layout from '../components/layout';
-import { getResponses } from '../utils/quiz-client';
-import './Dashboard.css';
+import React, { Component } from "react";
+import { Line } from "react-chartjs-2";
+import format from "date-fns/format";
+import parse from "date-fns/parse";
+import filter from "lodash/filter";
+import find from "lodash/find";
+import groupBy from "lodash/groupBy";
+import isEmpty from "lodash/isEmpty";
+import isUndefined from "lodash/isUndefined";
+import sortBy from "lodash/sortBy";
+import uniqBy from "lodash/uniqBy";
+import Layout from "../components/layout";
+import { getResponses } from "../utils/quiz-client";
+import "./Dashboard.css";
 
 const DATASETS = {
   Yes: {
-    label: 'My First dataset',
+    label: "My First dataset",
     fill: false,
     lineTension: 0.1,
-    backgroundColor: 'rgba(75,192,192,0.4)',
-    borderColor: 'rgba(75,192,192,1)',
-    borderCapStyle: 'butt',
+    backgroundColor: "rgba(75,192,192,0.4)",
+    borderColor: "rgba(75,192,192,1)",
+    borderCapStyle: "butt",
     borderDash: [],
     borderDashOffset: 0.0,
-    borderJoinStyle: 'miter',
-    pointBorderColor: 'rgba(75,192,192,1)',
-    pointBackgroundColor: '#fff',
+    borderJoinStyle: "miter",
+    pointBorderColor: "rgba(75,192,192,1)",
+    pointBackgroundColor: "#fff",
     pointBorderWidth: 1,
     pointHoverRadius: 5,
-    pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-    pointHoverBorderColor: 'rgba(220,220,220,1)',
+    pointHoverBackgroundColor: "rgba(75,192,192,1)",
+    pointHoverBorderColor: "rgba(220,220,220,1)",
     pointHoverBorderWidth: 2,
     pointRadius: 1,
     pointHitRadius: 10,
-    data: [65, 59, 80, 81, 56, 55, 40],
+    data: [65, 59, 80, 81, 56, 55, 40]
   },
   No: {
-    label: 'My First dataset',
+    label: "My First dataset",
     fill: false,
     lineTension: 0.1,
-    backgroundColor: 'rgba(192,75,75,0.4)',
-    borderColor: 'rgba(192,75,75,1)',
-    borderCapStyle: 'butt',
+    backgroundColor: "rgba(192,75,75,0.4)",
+    borderColor: "rgba(192,75,75,1)",
+    borderCapStyle: "butt",
     borderDash: [],
     borderDashOffset: 0.0,
-    borderJoinStyle: 'miter',
-    pointBorderColor: 'rgba(192,75,75,1)',
-    pointBackgroundColor: '#fff',
+    borderJoinStyle: "miter",
+    pointBorderColor: "rgba(192,75,75,1)",
+    pointBackgroundColor: "#fff",
     pointBorderWidth: 1,
     pointHoverRadius: 5,
-    pointHoverBackgroundColor: 'rgba(192,75,75,1)',
-    pointHoverBorderColor: 'rgba(220,220,220,1)',
+    pointHoverBackgroundColor: "rgba(192,75,75,1)",
+    pointHoverBorderColor: "rgba(220,220,220,1)",
     pointHoverBorderWidth: 2,
     pointRadius: 1,
     pointHitRadius: 10,
-    data: [65, 59, 80, 81, 56, 55, 40],
-  },
+    data: [65, 59, 80, 81, 56, 55, 40]
+  }
 };
 
 class Dashboard extends Component {
@@ -64,7 +64,7 @@ class Dashboard extends Component {
     range: 30,
     responses: [],
     questions: [],
-    activeQuestion: '5d0a5990163c280840f20eb8',
+    activeQuestion: "5d0a5990163c280840f20eb8"
   };
 
   async componentDidMount() {
@@ -77,7 +77,7 @@ class Dashboard extends Component {
       response => response.question
     );
 
-    this.setState({ responses: sortBy(responses, ['createdAt']), questions });
+    this.setState({ responses: sortBy(responses, ["createdAt"]), questions });
     this.setGraphDataForQuestion();
   };
 
@@ -88,7 +88,7 @@ class Dashboard extends Component {
   };
 
   handleRangeChange = e => {
-    console.log('here');
+    console.log("here");
     // Hit API to get new response data for a given range
     this.setState({ range: e.target.value }, () => this.queryResponses());
   };
@@ -102,10 +102,12 @@ class Dashboard extends Component {
 
   getDatasets = () => {
     const { activeQuestion, questions } = this.state;
-    const currentQuestion = questions.length ? find(questions, { _id: activeQuestion }) : {};
+    const currentQuestion = questions.length
+      ? find(questions, { _id: activeQuestion })
+      : {};
     const responses = this.getResponsesForActiveQuestion();
     const keyedResponses = groupBy(responses, response =>
-      format(parse(response.createdAt), 'MMM DD')
+      format(parse(response.createdAt), "MMM DD")
     );
     let datasets = [];
     let data = {};
@@ -124,7 +126,11 @@ class Dashboard extends Component {
     });
 
     Object.keys(data).forEach(responseText =>
-      datasets.push({ ...DATASETS[responseText], data: data[responseText], label: responseText })
+      datasets.push({
+        ...DATASETS[responseText],
+        data: data[responseText],
+        label: responseText
+      })
     );
     return datasets;
   };
@@ -132,13 +138,16 @@ class Dashboard extends Component {
   getLabels = () => {
     const responses = this.getResponsesForActiveQuestion();
     const keyedResponses = groupBy(responses, response =>
-      format(parse(response.createdAt), 'MMM DD')
+      format(parse(response.createdAt), "MMM DD")
     );
     return Object.keys(keyedResponses);
   };
 
   getResponsesForActiveQuestion = () =>
-    filter(this.state.responses, response => response.question._id === this.state.activeQuestion);
+    filter(
+      this.state.responses,
+      response => response.question._id === this.state.activeQuestion
+    );
 
   getResponses = async () => {
     const responses = await getResponses({ days: this.state.range });
@@ -146,15 +155,28 @@ class Dashboard extends Component {
     return responses;
   };
 
+  getResponseCount = response => {
+    const responses = this.getResponsesForActiveQuestion();
+    const filteredResponses = filter(responses, {
+      response: { value: response }
+    });
+    return filteredResponses.length;
+  };
+
   render() {
     const { activeQuestion, questions } = this.state;
-    const currentQuestion = questions.length ? find(questions, { _id: activeQuestion }) : {};
+    const currentQuestion = questions.length
+      ? find(questions, { _id: activeQuestion })
+      : {};
 
     return (
       <Layout>
         <select onChange={e => this.handleQuestionChange(e)}>
           {questions.map(question => (
-            <option value={question._id} selected={question._id === activeQuestion}>
+            <option
+              value={question._id}
+              selected={question._id === activeQuestion}
+            >
               {question.text}
             </option>
           ))}
@@ -171,6 +193,16 @@ class Dashboard extends Component {
           <React.Fragment>
             <h3>{currentQuestion.text}</h3>
             <Line data={this.state.data} />
+            <div className="panel">
+              <div className="panel__row">
+                <p className="panel__label">Yes</p>
+                <p className="panel__label">No</p>
+              </div>
+              <div className="panel__row">
+                <p className="panel__data">{this.getResponseCount("yes")}</p>
+                <p className="panel__data">{this.getResponseCount("no")}</p>
+              </div>
+            </div>
           </React.Fragment>
         ) : (
           <h3>No data available for the current selection</h3>
